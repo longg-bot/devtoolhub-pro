@@ -12,13 +12,13 @@ const intlMiddleware = createMiddleware({
   localePrefix: "as-needed",
 });
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Only check authentication for /admin routes
   if (path.startsWith('/admin')) {
     const token = request.cookies.get('auth_token')?.value;
-    const isLoggedIn = token && verifyToken(token);
+    const isLoggedIn = token && await verifyToken(token);
     console.log('isLoggedIn', isLoggedIn);
     if (!isLoggedIn) {
       console.log('Not authenticated');
