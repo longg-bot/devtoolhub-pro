@@ -148,14 +148,9 @@ export function VisionTool() {
 
       // Merge adjacent clusters
       const merged: { x: number; y: number; count: number }[] = [];
-      const visited = new Set<string>();
-      for (const [k, v] of clusters) {
-        if (visited.has(k)) continue;
-        let totalX = v[0], totalY = v[1], totalC = v[2];
-        visited.add(k);
-        // Simple: just use individual clusters above threshold
+      for (const [k, v] of Array.from(clusters.entries())) {
         if (v[2] > 8) {
-          merged.push({ x: totalX, y: totalY, count: totalC });
+          merged.push({ x: v[0], y: v[1], count: v[2] });
         }
       }
 
