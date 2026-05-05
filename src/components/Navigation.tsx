@@ -46,6 +46,10 @@ export const Navigation = ({ categories }: navigationProp ) => {
       href: "/",
     },
     {
+      label: t('toolsBtn'),
+      href: "/interactive",
+    },
+    {
       label: t('categoryBtn'),
       href: "/category",
     },
@@ -116,6 +120,13 @@ export const Navigation = ({ categories }: navigationProp ) => {
                   <Link href="/" legacyBehavior passHref>
                     <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'font-medium', '/' === pathname && "font-extrabold")}>
                       {t('homeBtn')}
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link href="/interactive" legacyBehavior passHref>
+                    <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'font-medium', '/interactive' === pathname && "font-extrabold")}>
+                      {t('toolsBtn')}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>

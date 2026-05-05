@@ -45,6 +45,7 @@
   },
   "navigation": {
     "homeBtn": "Home",
+    "toolsBtn": "Online Tools",
     "categoryBtn": "Category",
     "moreCategoryBtn": "More",
     "moreCategoryDescription": "More Categories",

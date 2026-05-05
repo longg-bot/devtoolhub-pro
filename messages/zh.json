@@ -45,6 +45,7 @@
   },
   "navigation": { 
     "homeBtn": "首页",
+    "toolsBtn": "在线工具",
     "categoryBtn": "分类",
     "moreCategoryBtn": "更多",
     "moreCategoryDescription": "更多分类",
