@@ -31,48 +31,46 @@ let mediaPipePromise: Promise<any> | null = null;
 function loadMediaPipeScripts(): Promise<any> {
   if (mediaPipePromise) return mediaPipePromise;
 
-  mediaPipePromise = new Promise(async (resolve, reject) => {
-    try {
-      // Load the WASM internals first
-      await loadScript(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm/vision_wasm_internal.js"
-      );
-      // Then load the vision bundle
-      await loadScript(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/vision_bundle.mjs"
-      );
+  mediaPipePromise = (async () => {
+    // Load WASM internals as regular script
+    await loadScript(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm/vision_wasm_internal.js"
+    );
 
-      const win = window as any;
-      if (!win.FilesetResolver) {
-        reject(new Error("MediaPipe 加载失败，请刷新页面重试"));
-        return;
-      }
+    // Load ESM bundle via inline module script to avoid webpack bundling
+    await new Promise<void>((resolve, reject) => {
+      const id = `mediapipe-module-${Date.now()}`;
+      const s = document.createElement("script");
+      s.type = "module";
+      s.id = id;
+      s.textContent = `
+        import * as mp from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/vision_bundle.mjs";
+        window.__mediaPipeModule = mp;
+      `;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("ESM 模块加载失败"));
+      document.head.appendChild(s);
+    });
 
-      const vision = await win.FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm"
-      );
-
-      const FaceLandmarker = win.FaceLandmarker;
-      const HandLandmarker = win.HandLandmarker;
-      const GestureRecognizer = win.GestureRecognizer;
-
-      if (!FaceLandmarker || !HandLandmarker || !GestureRecognizer) {
-        reject(new Error("MediaPipe 模块加载不完整"));
-        return;
-      }
-
-      resolve({ vision, FaceLandmarker, HandLandmarker, GestureRecognizer });
-    } catch (e) {
-      reject(e);
+    const mp = (window as any).__mediaPipeModule;
+    if (!mp || !mp.FilesetResolver) {
+      throw new Error("FilesetResolver 不可用");
     }
-  });
+
+    const { FilesetResolver, FaceLandmarker, HandLandmarker, GestureRecognizer } = mp;
+
+    await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm"
+    );
+
+    return { FaceLandmarker, HandLandmarker, GestureRecognizer };
+  })();
 
   return mediaPipePromise;
 }
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Check if already loaded
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve();
       return;
@@ -81,7 +79,7 @@ function loadScript(src: string): Promise<void> {
     s.src = src;
     s.crossOrigin = "anonymous";
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error(`Failed to load: ${src}`));
+    s.onerror = () => reject(new Error(`WASM 加载失败: ${src}`));
     document.head.appendChild(s);
   });
 }
