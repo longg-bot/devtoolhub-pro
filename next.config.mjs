@@ -29,6 +29,18 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   optimizeFonts: true,
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        encoding: false,
+        path: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
 };
  
 export default withNextIntl(nextConfig);
